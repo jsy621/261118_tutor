@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나만의 외국어 튜터앱 구축 계획</title>
+<meta name="description" content="코딩 없이 Claude만으로 일본어·영어 개인 튜터앱을 4주 안에 만드는 계획">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#07090f; --bg2:#0d1119; --card:rgba(255,255,255,.045); --line:rgba(255,255,255,.09);
+  --tx:#eef1f8; --mut:#9aa4b8; --a:#7c8cff; --b:#c06bff; --c:#35e0c2; --warm:#ff8a5c;
+  --grad:linear-gradient(120deg,#7c8cff 0%,#c06bff 50%,#ff8a5c 100%);
+  --r:22px;
+}
+:root[data-theme="light"]{
+  --bg:#f6f7fb; --bg2:#ffffff; --card:rgba(255,255,255,.8); --line:rgba(20,25,50,.09);
+  --tx:#12172b; --mut:#5d6684; --a:#5566ff; --b:#a443f0; --c:#0bb89c; --warm:#f2662f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Pretendard Variable",Pretendard,-apple-system,"Segoe UI","Malgun Gothic",sans-serif;background:var(--bg);color:var(--tx);line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+a{color:inherit;text-decoration:none}
+.wrap{width:min(1120px,100% - 40px);margin-inline:auto}
+section{padding:110px 0;position:relative}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--c);border-radius:2px}
+h2{font-size:clamp(30px,4.6vw,48px);line-height:1.2;letter-spacing:-.03em;margin:14px 0 14px;font-weight:800}
+.lead{color:var(--mut);font-size:clamp(16px,2vw,19px);max-width:640px}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:shift 8s ease infinite}
+@keyframes shift{0%,100%{background-position:0 0}50%{background-position:100% 0}}
+
+/* progress + nav */
+#bar{position:fixed;top:0;left:0;height:3px;width:0;background:var(--grad);z-index:100}
+nav{position:fixed;top:0;left:0;right:0;z-index:90;transition:.3s}
+nav.stuck{background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:66px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em}
+.logo i{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-style:normal;font-size:16px;color:#fff}
+.links{display:flex;gap:26px;align-items:center;font-size:14.5px;color:var(--mut);font-weight:500}
+.links a:hover{color:var(--tx)}
+.tbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--tx);cursor:pointer;font-size:16px}
+@media(max-width:760px){.links a{display:none}}
+
+/* hero */
+.hero{min-height:100vh;display:flex;align-items:center;padding:130px 0 80px;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;animation:float 16s ease-in-out infinite;pointer-events:none}
+.b1{width:480px;height:480px;background:#5566ff;top:-120px;left:-120px}
+.b2{width:420px;height:420px;background:#b13cff;right:-100px;top:10%;animation-delay:-5s}
+.b3{width:360px;height:360px;background:#ff7a45;bottom:-140px;left:35%;animation-delay:-9s;opacity:.32}
+:root[data-theme="light"] .blob{opacity:.28}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-40px) scale(1.08)}66%{transform:translate(-40px,40px) scale(.94)}}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse at 50% 40%,#000 10%,transparent 70%);opacity:.6}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.15fr .85fr;gap:50px;align-items:center}
+.pill{display:inline-flex;gap:10px;align-items:center;padding:7px 16px 7px 8px;border:1px solid var(--line);background:var(--card);border-radius:99px;font-size:13.5px;color:var(--mut);backdrop-filter:blur(8px)}
+.pill b{background:var(--grad);color:#fff;border-radius:99px;padding:2px 10px;font-size:12px}
+h1{font-size:clamp(40px,7vw,76px);line-height:1.08;letter-spacing:-.045em;font-weight:900;margin:24px 0 22px}
+.hero .lead{margin-bottom:34px}
+.cta{display:flex;gap:14px;flex-wrap:wrap}
+.btn{padding:15px 28px;border-radius:14px;font-weight:700;font-size:15.5px;transition:.25s;display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line)}
+.btn.p{background:var(--grad);color:#fff;border:0;box-shadow:0 14px 40px -10px rgba(140,100,255,.6)}
+.btn:hover{transform:translateY(-3px)}
+.meta{margin-top:34px;font-size:14px;color:var(--mut);display:flex;gap:18px;flex-wrap:wrap}
+.meta span::before{content:"●";color:var(--c);margin-right:8px;font-size:9px;vertical-align:2px}
+
+/* floating language cards */
+.stack{position:relative;height:440px}
+.fc{position:absolute;padding:20px 24px;border-radius:20px;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(18px);box-shadow:0 30px 60px -30px rgba(0,0,0,.5);animation:bob 7s ease-in-out infinite}
+.fc small{display:block;color:var(--mut);font-size:12px;margin-bottom:6px;letter-spacing:.05em}
+.fc .big{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.fc.f1{top:6%;left:0;animation-delay:0s}
+.fc.f2{top:32%;right:0;animation-delay:-2.2s}
+.fc.f3{bottom:8%;left:8%;animation-delay:-4.4s}
+.fc rt{font-size:10px;color:var(--c)}
+.chip{display:inline-block;margin-top:10px;font-size:12px;padding:4px 10px;border-radius:99px;background:rgba(53,224,194,.14);color:var(--c);font-weight:600}
+.chip.w{background:rgba(255,138,92,.15);color:var(--warm)}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-16px) rotate(1deg)}}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}.stack{height:300px}.fc .big{font-size:21px}}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px}
+.stat{padding:30px 24px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);transition:.3s}
+.stat:hover{transform:translateY(-6px);border-color:var(--a)}
+.stat .n{font-size:clamp(36px,5vw,54px);font-weight:900;letter-spacing:-.04em;line-height:1}
+.stat .n sub{font-size:.36em;font-weight:700;color:var(--mut);margin-left:4px;vertical-align:baseline}
+.stat p{margin-top:12px;color:var(--mut);font-size:14.5px}
+@media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+.goal{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.goal div{padding:28px;border-radius:var(--r);background:var(--card);border:1px solid var(--line)}
+.goal em{font-style:normal;font-size:12px;font-weight:800;letter-spacing:.12em;color:var(--a)}
+.goal h3{margin:8px 0;font-size:19px;letter-spacing:-.02em}
+.goal p{color:var(--mut);font-size:15px}
+@media(max-width:860px){.goal{grid-template-columns:1fr}}
+
+/* features */
+.filters{display:flex;gap:10px;margin:34px 0 26px;flex-wrap:wrap}
+.fbtn{padding:9px 20px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--mut);cursor:pointer;font:600 14px inherit;font-family:inherit;transition:.25s}
+.fbtn.on,.fbtn:hover{color:#fff;background:var(--grad);border-color:transparent}
+.fgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.fcard{grid-column:span 2;position:relative;padding:30px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);overflow:hidden;transition:.35s;transform-style:preserve-3d}
+.fcard:nth-child(1),.fcard:nth-child(2){grid-column:span 3}
+.fcard::before{content:"";position:absolute;inset:0;background:radial-gradient(400px circle at var(--mx,50%) var(--my,0%),rgba(124,140,255,.22),transparent 45%);opacity:0;transition:.3s}
+.fcard:hover::before{opacity:1}
+.fcard:hover{border-color:rgba(124,140,255,.5)}
+.fcard.hide{opacity:.18;filter:grayscale(1);transform:scale(.97)}
+.ico{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,rgba(124,140,255,.25),rgba(192,107,255,.2));margin-bottom:20px}
+.fcard h3{font-size:21px;letter-spacing:-.02em;margin-bottom:8px;position:relative}
+.fcard p{color:var(--mut);font-size:15px;position:relative}
+.prio{position:absolute;top:24px;right:24px;font-size:12px;font-weight:800;padding:5px 12px;border-radius:99px;z-index:1}
+.p1{background:rgba(255,138,92,.16);color:var(--warm)}.p2{background:rgba(124,140,255,.16);color:var(--a)}.p3{background:rgba(53,224,194,.14);color:var(--c)}
+@media(max-width:860px){.fgrid{grid-template-columns:1fr 1fr}.fcard,.fcard:nth-child(1),.fcard:nth-child(2){grid-column:span 1}}
+@media(max-width:560px){.fgrid{grid-template-columns:1fr}}
+
+/* tools */
+.tools{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:44px}
+.tool{display:flex;gap:18px;padding:26px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);transition:.3s}
+.tool:hover{transform:translateY(-5px);border-color:var(--c)}
+.tool .ico{flex:none;margin:0}
+.tool h3{font-size:18px;margin-bottom:2px}
+.tool .use{font-size:13.5px;color:var(--c);font-weight:600;margin-bottom:8px}
+.tool .ex{font-size:14.5px;color:var(--mut)}
+.tool.optional{border-style:dashed}
+.tag{font-size:11px;padding:2px 8px;border-radius:6px;background:var(--line);color:var(--mut);margin-left:8px;vertical-align:2px}
+@media(max-width:760px){.tools{grid-template-columns:1fr}}
+
+/* prompt terminal */
+.term{margin-top:30px;border-radius:var(--r);border:1px solid var(--line);background:#0a0d16;overflow:hidden;box-shadow:0 40px 80px -40px rgba(80,90,255,.4)}
+.term-h{display:flex;gap:8px;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.term-h i{width:12px;height:12px;border-radius:50%;background:#ff5f57}.term-h i:nth-child(2){background:#febc2e}.term-h i:nth-child(3){background:#28c840}
+.term-h span{margin-left:12px;font-size:13px;color:#8b95ab}
+.term-b{padding:26px 28px;font-size:16.5px;line-height:1.85;min-height:150px;color:#e6e9f3}
+.term-b .k{color:#35e0c2;font-weight:700}
+.caret{display:inline-block;width:9px;height:1.15em;background:#7c8cff;vertical-align:-3px;margin-left:2px;animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+
+/* result */
+.result{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.spec{margin-top:30px;display:grid;gap:14px}
+.spec li{list-style:none;display:flex;gap:14px;padding:18px 20px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
+.spec b{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--grad);color:#fff;font-size:15px}
+.spec strong{display:block;font-size:15.5px}
+.spec span{font-size:14.5px;color:var(--mut)}
+.bars{margin-top:20px;display:grid;gap:12px}
+.bar{font-size:13.5px;color:var(--mut)}
+.bar div{height:10px;border-radius:99px;background:var(--line);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:99px;background:var(--grad);transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
+.reveal.in .bar i{width:var(--w)}
+@media(max-width:900px){.result{grid-template-columns:1fr;gap:40px}}
+
+/* phone */
+.phones{display:flex;gap:26px;justify-content:center;perspective:1200px}
+.phone{width:280px;height:560px;border-radius:44px;padding:11px;background:linear-gradient(160deg,#2a2f44,#0c0f1a);box-shadow:0 50px 90px -30px rgba(90,80,255,.55),inset 0 0 0 2px rgba(255,255,255,.1);position:relative;flex:none;transition:.5s}
+.phones .phone:first-child{transform:rotateY(10deg) translateY(10px)}
+.phones .phone:last-child{transform:rotateY(-10deg) translateY(-14px);margin-top:30px}
+.phones:hover .phone{transform:none}
+.screen{width:100%;height:100%;border-radius:34px;background:#f4f6fc;color:#171b30;overflow:hidden;position:relative;padding:44px 18px 18px;display:flex;flex-direction:column}
+.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:84px;height:22px;background:#0b0d16;border-radius:99px;z-index:3}
+.q-top{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#6a7392}
+.prog{height:6px;border-radius:9px;background:#dfe3f2;margin:8px 0 18px;overflow:hidden}
+.prog i{display:block;height:100%;width:10%;background:linear-gradient(90deg,#7c8cff,#c06bff);border-radius:9px;transition:width .5s}
+.qlabel{font-size:11px;color:#8a92b0;font-weight:700;letter-spacing:.08em}
+.word{text-align:center;margin:12px 0 4px;font-size:44px;font-weight:800;line-height:1.1}
+.word ruby rt{font-size:12px;color:#7c8cff;font-weight:600;letter-spacing:.05em}
+.speak{align-self:center;border:0;background:#e8ebfb;color:#5566ff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:99px;margin-bottom:14px;cursor:pointer}
+.opts{display:grid;gap:9px}
+.opt{border:2px solid #e3e7f5;background:#fff;border-radius:14px;padding:12px 14px;font:600 14px inherit;font-family:inherit;text-align:left;cursor:pointer;transition:.2s;color:#171b30;display:flex;justify-content:space-between}
+.opt:hover{border-color:#7c8cff;transform:translateX(3px)}
+.opt.ok{background:#e3faf3;border-color:#1fc9a2;color:#0a7a62}
+.opt.no{background:#ffecec;border-color:#ff6b6b;color:#b42323;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.fb{margin-top:auto;font-size:12.5px;text-align:center;min-height:36px;color:#5d6684}
+.fb b{color:#0a7a62}
+.score{text-align:center;margin:10px 0}
+.ring{width:130px;height:130px;margin:6px auto;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:10;stroke-linecap:round}
+.ring .t{stroke:#dfe3f2}.ring .v{stroke:url(#g);stroke-dasharray:314;stroke-dashoffset:314;transition:stroke-dashoffset 1.6s cubic-bezier(.2,.8,.2,1)}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-weight:900}
+.ring span small{font-size:13px;color:#8a92b0;font-weight:700}
+.wrong{background:#fff;border-radius:16px;padding:12px 14px;margin-top:8px}
+.wrong h5{font-size:11px;color:#8a92b0;letter-spacing:.08em;margin-bottom:8px}
+.wrong div{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed #e3e7f5}
+.wrong div:last-child{border:0}
+.wrong em{font-style:normal;color:#ff6b6b;font-weight:700}
+.retry{margin-top:auto;border:0;background:linear-gradient(90deg,#7c8cff,#c06bff);color:#fff;font:700 13.5px inherit;font-family:inherit;padding:13px;border-radius:14px;cursor:pointer}
+.cap{text-align:center;margin-top:18px;font-size:13px;color:var(--mut)}
+@media(max-width:560px){.phone{width:240px;height:490px}.phones{flex-direction:column;align-items:center}.phones .phone{transform:none!important;margin:0!important}.word{font-size:36px}}
+
+/* roadmap */
+.road{position:relative;margin-top:50px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.road::before{content:"";position:absolute;top:34px;left:6%;right:6%;height:2px;background:linear-gradient(90deg,var(--warm),var(--a),var(--c));opacity:.5}
+.step{position:relative;padding:62px 26px 28px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);transition:.3s}
+.step:hover{transform:translateY(-6px)}
+.step .dot{position:absolute;top:18px;left:26px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;box-shadow:0 0 0 7px var(--bg)}
+.step:nth-child(1) .dot{background:var(--warm)}.step:nth-child(2) .dot{background:var(--a)}.step:nth-child(3) .dot{background:var(--c)}
+.step h3{font-size:19px;margin-bottom:8px}
+.step ul{list-style:none;color:var(--mut);font-size:15px;display:grid;gap:6px}
+.step li::before{content:"✓";color:var(--c);margin-right:8px;font-weight:800}
+@media(max-width:860px){.road{grid-template-columns:1fr}.road::before{display:none}}
+
+/* timeline */
+.tl{position:relative;margin-top:56px;padding-left:46px}
+.tl-line{position:absolute;left:15px;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--line);overflow:hidden}
+.tl-line i{display:block;width:100%;height:0;background:linear-gradient(180deg,var(--warm),var(--a),var(--c));transition:height .2s}
+.tl-item{position:relative;margin-bottom:22px}
+.tl-dot{position:absolute;left:-40px;top:26px;width:21px;height:21px;border-radius:50%;background:var(--bg);border:3px solid var(--a);box-shadow:0 0 0 6px var(--bg);transition:.4s}
+.tl-item.in .tl-dot{background:var(--a)}
+.tl-item.now .tl-dot{border-color:var(--warm);background:var(--warm);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 6px var(--bg),0 0 0 6px rgba(255,138,92,.5)}100%{box-shadow:0 0 0 6px var(--bg),0 0 0 20px rgba(255,138,92,0)}}
+.tl-card{padding:28px 30px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);transition:.3s}
+.tl-card:hover{transform:translateX(8px);border-color:var(--a)}
+.tl-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.wk{font-size:12px;font-weight:800;letter-spacing:.14em;color:#fff;background:var(--grad);padding:4px 12px;border-radius:99px}
+.dt{font-size:14px;color:var(--mut);font-weight:600}
+.tl-card h3{font-size:21px;letter-spacing:-.02em;margin-bottom:12px}
+.tl-card ul{list-style:none;display:grid;gap:7px;color:var(--mut);font-size:15px}
+.tl-card li::before{content:"✓";color:var(--c);margin-right:10px;font-weight:800}
+.goal-line{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);font-size:14.5px;font-weight:700}
+@media(max-width:560px){.tl{padding-left:34px}.tl-dot{left:-31px}.tl-line{left:10px}.tl-card{padding:22px}}
+
+footer{padding:60px 0 70px;border-top:1px solid var(--line);color:var(--mut);font-size:14px;text-align:center}
+footer .grad{font-weight:800;font-size:18px;display:block;margin-bottom:6px}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(34px);transition:opacity .9s cubic-bezier(.2,.8,.2,1),transform .9s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0s)}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<nav id="nav"><div class="wrap nav-in">
+  <a href="#top" class="logo"><i>語</i>My Tutor</a>
+  <div class="links"><a href="#overview">개요</a><a href="#features">핵심 기능</a><a href="#claude">Claude 활용</a><a href="#result">실행결과</a><a href="#timeline">타임라인</a><button class="tbtn" id="theme" aria-label="테마 전환">☾</button></div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="grid-bg"></div><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="pill reveal"><b>PLAN</b> 2026. 11. 18. · JIMIN</span>
+      <h1 class="reveal" style="--d:.1s">나만의 <span class="grad">외국어 튜터앱</span><br>일본어 · 영어</h1>
+      <p class="lead reveal" style="--d:.2s">코딩 없이 Claude만으로, 4주 안에.<br>출퇴근 시간 매일 15~20분, 내 수준과 관심사에 꼭 맞는 개인 튜터를 만듭니다.</p>
+      <div class="cta reveal" style="--d:.3s"><a class="btn p" href="#features">핵심 기능 보기 →</a><a class="btn" href="#result">실행결과 체험</a></div>
+      <div class="meta reveal" style="--d:.4s"><span>코딩 불필요</span><span>4주 구축</span><span>모바일 홈 화면 추가</span></div>
+    </div>
+    <div class="stack reveal" style="--d:.25s">
+      <div class="fc f1"><small>日本語 · JLPT N5</small><div class="big"><ruby>水<rt>みず</rt></ruby> = 물</div><span class="chip">정답!</span></div>
+      <div class="fc f2"><small>ENGLISH · BUSINESS</small><div class="big">Let's circle back.</div><span class="chip w">교정 · 더 자연스럽게</span></div>
+      <div class="fc f3"><small>오늘의 학습</small><div class="big">15 min · 5턴</div><span class="chip">틀린 표현 3개 정리</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="overview">
+  <div class="wrap">
+    <span class="eyebrow reveal">01 · Overview</span>
+    <h2 class="reveal">시중 앱의 <span class="grad">획일적 커리큘럼</span> 대신,<br>내 수준에 맞춘 학습</h2>
+    <p class="lead reveal">업무·여행·생활 등 내 관심사에 맞춰 짧게, 반복해서, 실제로 쓰는 문장 중심으로 학습합니다.</p>
+    <div class="stats">
+      <div class="stat reveal"><div class="n"><span data-c="4">0</span><sub>주</sub></div><p>구축 기간</p></div>
+      <div class="stat reveal" style="--d:.08s"><div class="n"><span data-c="15">0</span><sub>~20분</sub></div><p>매일 출퇴근 학습</p></div>
+      <div class="stat reveal" style="--d:.16s"><div class="n"><span data-c="2">0</span><sub>개 언어</sub></div><p>일본어 · 영어</p></div>
+      <div class="stat reveal" style="--d:.24s"><div class="n"><span data-c="0">0</span><sub>줄 코딩</sub></div><p>Claude만으로 제작</p></div>
+    </div>
+    <div class="goal">
+      <div class="reveal"><em>PURPOSE</em><h3>목적</h3><p>시중 앱의 획일적 커리큘럼 대신, 내 수준·관심사(업무·여행·생활)에 맞춘 학습</p></div>
+      <div class="reveal" style="--d:.08s"><em>LANGUAGES</em><h3>대상 언어</h3><p>일본어(기초~중급 회화)<br>영어(업무·실무 표현)</p></div>
+      <div class="reveal" style="--d:.16s"><em>EFFECT</em><h3>기대효과</h3><p>짧은 시간 반복 학습, 틀린 표현 자동 누적·복습, 실제 쓰는 문장 중심 학습</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="features" style="background:linear-gradient(180deg,transparent,var(--bg2) 20%,var(--bg2) 80%,transparent)">
+  <div class="wrap">
+    <span class="eyebrow reveal">02 · Core Features</span>
+    <h2 class="reveal">다섯 가지 <span class="grad">핵심 기능</span></h2>
+    <p class="lead reveal">우선순위 1 기능부터 먼저 만들고, 점차 확장합니다.</p>
+    <div class="filters reveal">
+      <button class="fbtn on" data-p="all">전체</button><button class="fbtn" data-p="1">우선순위 1</button><button class="fbtn" data-p="2">우선순위 2</button><button class="fbtn" data-p="3">우선순위 3</button>
+    </div>
+    <div class="fgrid">
+      <article class="fcard reveal" data-p="1"><span class="prio p1">우선순위 1</span><div class="ico">💬</div><h3>회화 롤플레이</h3><p>상황(회의·여행·식당) 선택 후 AI와 대화, 오류 즉시 교정</p></article>
+      <article class="fcard reveal" data-p="1" style="--d:.08s"><span class="prio p1">우선순위 1</span><div class="ico">✍️</div><h3>작문 교정</h3><p>내가 쓴 문장을 자연스러운 표현으로 고치고 이유 설명</p></article>
+      <article class="fcard reveal" data-p="2"><span class="prio p2">우선순위 2</span><div class="ico">📒</div><h3>나만의 단어장</h3><p>학습 중 나온 단어·표현 자동 저장</p></article>
+      <article class="fcard reveal" data-p="2" style="--d:.08s"><span class="prio p2">우선순위 2</span><div class="ico">🎯</div><h3>복습 퀴즈</h3><p>틀린 표현 중심 매일 5문항 복습</p></article>
+      <article class="fcard reveal" data-p="3" style="--d:.16s"><span class="prio p3">우선순위 3</span><div class="ico">🎧</div><h3>음성 연습</h3><p>출퇴근길 듣기·말하기</p></article>
+    </div>
+  </div>
+</section>
+
+<section id="claude">
+  <div class="wrap">
+    <span class="eyebrow reveal">03 · Claude Usage</span>
+    <h2 class="reveal">Claude <span class="grad">활용 방법</span></h2>
+    <p class="lead reveal">Claude가 제공하는 기능을 조합해 별도 개발 없이 튜터 환경을 구성합니다.</p>
+    <div class="tools">
+      <div class="tool reveal"><div class="ico">📁</div><div><h3>프로젝트 <span class="tag">튜터 지침</span></h3><div class="use">언어별 전용 튜터 설정</div><p class="ex">“일본어 튜터” 프로젝트에 “JLPT N4 수준, 틀리면 교정 후 한국어로 이유 설명” 등록</p></div></div>
+      <div class="tool reveal" style="--d:.08s"><div class="ico">📱</div><div><h3>아티팩트 <span class="tag">앱 화면</span></h3><div class="use">퀴즈·단어장 화면을 웹앱으로 제작</div><p class="ex">“일본어 단어 퀴즈 앱 만들어줘” → 링크로 휴대폰에서 사용</p></div></div>
+      <div class="tool reveal"><div class="ico">🎙️</div><div><h3>음성 모드</h3><div class="use">말하기·듣기 회화 연습</div><p class="ex">출퇴근길 모바일 앱에서 영어 회의 롤플레이</p></div></div>
+      <div class="tool reveal" style="--d:.08s"><div class="ico">🧠</div><div><h3>메모리</h3><div class="use">내 수준·약점 누적</div><p class="ex">“조사 실수가 많다”를 기억해 다음 학습에 반영</p></div></div>
+      <div class="tool optional reveal" style="grid-column:1/-1"><div class="ico">🛠️</div><div><h3>Claude Code <span class="tag">선택</span></h3><div class="use">정식 앱 개발·배포</div><p class="ex">가족·동료와 공유할 때만 검토</p></div></div>
+    </div>
+    <div class="term reveal">
+      <div class="term-h"><i></i><i></i><i></i><span>튜터 지침 예시</span></div>
+      <div class="term-b"><span class="k">▸ </span><span id="typed"></span><span class="caret"></span></div>
+    </div>
+  </div>
+</section>
+
+<section id="result" style="background:linear-gradient(180deg,transparent,var(--bg2) 20%,var(--bg2) 85%,transparent)">
+  <div class="wrap result">
+    <div>
+      <span class="eyebrow reveal">04 · Result</span>
+      <h2 class="reveal">실행결과<br><span class="grad">일본어 단어 퀴즈</span></h2>
+      <p class="lead reveal">Claude 아티팩트로 제작, 휴대폰 홈 화면에 추가해 앱처럼 바로 실행합니다.</p>
+      <ul class="spec reveal">
+        <li><b>1</b><div><strong>구성</strong><span>초급(JLPT N5) 60개 · 중급(N4~N3, 업무·생활 중심) 60개, 1회 10문항 4지선다</span></div></li>
+        <li><b>2</b><div><strong>기능</strong><span>뜻 맞히기·단어 맞히기, 후리가나 표시, 발음 듣기, 틀린 단어 자동 저장·복습</span></div></li>
+        <li><b>3</b><div><strong>화면</strong><span>① 문제 풀이: 답 선택 시 정답·읽기 즉시 표시 → ② 결과: 점수·틀린 단어 정리, 틀린 단어만 재학습</span></div></li>
+      </ul>
+      <div class="bars reveal">
+        <div class="bar">초급 N5 · 60개<div><i style="--w:50%"></i></div></div>
+        <div class="bar">중급 N4~N3 · 60개<div><i style="--w:50%"></i></div></div>
+      </div>
+    </div>
+    <div class="reveal" style="--d:.15s">
+      <div class="phones">
+        <div class="phone"><div class="screen"><span class="notch"></span>
+          <div class="q-top"><span>JLPT N5</span><span id="qn">1 / 10</span></div>
+          <div class="prog"><i id="pg"></i></div>
+          <div class="qlabel" style="text-align:center">뜻 맞히기</div>
+          <div class="word" id="w"></div>
+          <button class="speak" id="sp">🔊 발음 듣기</button>
+          <div class="opts" id="opts"></div>
+          <div class="fb" id="fb">정답을 선택하세요</div>
+        </div></div>
+        <div class="phone"><div class="screen"><span class="notch"></span>
+          <div class="q-top"><span>결과</span><span>10문항</span></div>
+          <div class="score"><div class="ring"><svg viewBox="0 0 120 120" width="130" height="130"><defs><linearGradient id="g"><stop offset="0" stop-color="#7c8cff"/><stop offset="1" stop-color="#c06bff"/></linearGradient></defs><circle class="t" cx="60" cy="60" r="50"/><circle class="v" id="rv" cx="60" cy="60" r="50"/></svg><span><div><b id="sc">0</b><small> / 10</small></div></span></div></div>
+          <div class="wrong"><h5>틀린 단어 정리</h5><div id="wl"><span style="color:#8a92b0">풀이를 마치면 표시됩니다</span></div></div>
+          <button class="retry" id="rt">틀린 단어만 재학습</button>
+        </div></div>
+      </div>
+      <p class="cap">※ 화면은 설명용 예시 데모입니다 · 직접 눌러보세요</p>
+    </div>
+  </div>
+</section>
+
+<section id="timeline">
+  <div class="wrap">
+    <span class="eyebrow reveal">05 · Timeline</span>
+    <h2 class="reveal">4주 <span class="grad">구축 타임라인</span></h2>
+    <p class="lead reveal">오늘(2026. 11. 18. 수)부터 시작해 12. 15. 월까지, 우선순위 순서로 진행하는 제안 일정입니다.</p>
+    <div class="tl">
+      <div class="tl-line"><i id="tlfill"></i></div>
+      <div class="tl-item reveal now">
+        <span class="tl-dot"></span>
+        <div class="tl-card"><div class="tl-top"><span class="wk">WEEK 1</span><span class="dt">11.18 수 ~ 11.24 화</span><span class="chip w">오늘 시작</span></div>
+          <h3>기반 만들기 · 우선순위 1</h3>
+          <ul><li>일본어·영어 튜터 프로젝트 만들고 지침 등록 (수준, 교정 방식, 한국어 설명)</li><li>회화 롤플레이: 상황(회의·여행·식당) 3종 시험 대화</li><li>작문 교정: 내가 쓴 문장 교정·이유 설명 확인</li></ul>
+          <div class="goal-line">🎯 목표: 매일 15분 학습 루틴 시작</div></div>
+      </div>
+      <div class="tl-item reveal">
+        <span class="tl-dot"></span>
+        <div class="tl-card"><div class="tl-top"><span class="wk">WEEK 2</span><span class="dt">11.25 수 ~ 12.01 화</span></div>
+          <h3>복습 체계 · 우선순위 2</h3>
+          <ul><li>나만의 단어장: 학습 중 나온 단어·표현 저장 방식 정리</li><li>일본어 단어 퀴즈 아티팩트 제작 (N5 60개, N4~N3 60개)</li><li>휴대폰 홈 화면에 추가해 출퇴근길 사용</li></ul>
+          <div class="goal-line">🎯 목표: 퀴즈 앱 첫 버전 완성</div></div>
+      </div>
+      <div class="tl-item reveal">
+        <span class="tl-dot"></span>
+        <div class="tl-card"><div class="tl-top"><span class="wk">WEEK 3</span><span class="dt">12.02 수 ~ 12.08 화</span></div>
+          <h3>복습 고도화 · 음성 연습 · 우선순위 2~3</h3>
+          <ul><li>틀린 표현 중심 매일 5문항 복습 퀴즈 운영</li><li>영어(업무·실무 표현) 단어장·퀴즈 확장</li><li>음성 모드로 출퇴근길 듣기·말하기 연습 시작</li></ul>
+          <div class="goal-line">🎯 목표: 일본어·영어 모두 복습 루프 가동</div></div>
+      </div>
+      <div class="tl-item reveal">
+        <span class="tl-dot"></span>
+        <div class="tl-card"><div class="tl-top"><span class="wk">WEEK 4</span><span class="dt">12.09 수 ~ 12.15 월</span><span class="chip">마무리</span></div>
+          <h3>점검 · 안정화</h3>
+          <ul><li>메모리에 내 약점(예: 조사 실수) 누적, 지침 개선</li><li>4주 학습 기록 점검, 난이도·분량 조정</li><li>가족·동료와 공유할 때만 Claude Code 배포 검토</li></ul>
+          <div class="goal-line">🎯 목표: 나만의 튜터앱 정식 운영</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap"><span class="grad">나만의 외국어 튜터앱 · 일본어 · 영어</span>구축 계획 · 2026. 11. 18. · JIMIN</div></footer>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+/* theme */
+const root=document.documentElement,tb=$('#theme');
+try{if(localStorage.th)root.dataset.theme=localStorage.th}catch(e){}
+const syncT=()=>tb.textContent=root.dataset.theme==='light'?'☾':'☀';syncT();
+tb.onclick=()=>{root.dataset.theme=root.dataset.theme==='light'?'dark':'light';try{localStorage.th=root.dataset.theme}catch(e){};syncT()};
+/* scroll */
+const nav=$('#nav'),bar=$('#bar');
+addEventListener('scroll',()=>{nav.classList.toggle('stuck',scrollY>20);bar.style.width=scrollY/(document.body.scrollHeight-innerHeight)*100+'%'},{passive:true});
+/* reveal + countup */
+const count=el=>{const t=+el.dataset.c;if(!t){el.textContent=0;return}let s=null;const f=ts=>{s??=ts;const p=Math.min((ts-s)/1200,1);el.textContent=Math.round(t*(1-Math.pow(1-p,3)));p<1&&requestAnimationFrame(f)};requestAnimationFrame(f)};
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');e.target.querySelectorAll('[data-c]').forEach(count);if(e.target.id==='typedBox')type();io.unobserve(e.target)}}),{threshold:.15});
+$$('.reveal').forEach(el=>io.observe(el));
+/* timeline fill */
+const tl=$('.tl'),tf=$('#tlfill');
+const tlUpd=()=>{const r=tl.getBoundingClientRect();tf.style.height=Math.max(0,Math.min(r.height,innerHeight*.6-r.top))+'px'};
+addEventListener('scroll',tlUpd,{passive:true});tlUpd();
+/* feature filter + spotlight */
+$$('.fbtn').forEach(b=>b.onclick=()=>{$$('.fbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');$$('.fcard').forEach(c=>c.classList.toggle('hide',b.dataset.p!=='all'&&c.dataset.p!==b.dataset.p))});
+$$('.fcard').forEach(c=>c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',e.clientX-r.left+'px');c.style.setProperty('--my',e.clientY-r.top+'px')}));
+/* typing */
+const msg='나는 일본어 초급 학습자다. 하루 15분, 대화 5턴으로 진행하고 끝에 틀린 표현 3개를 정리해줘. 한자에는 후리가나를 달아줘.';
+let typed=false;function type(){if(typed)return;typed=true;let i=0;const el=$('#typed');(function n(){el.textContent=msg.slice(0,++i);if(i<msg.length)setTimeout(n,32)})()}
+const tio=new IntersectionObserver(e=>{if(e[0].isIntersecting){type();tio.disconnect()}},{threshold:.5});tio.observe($('.term'));
+/* quiz demo */
+const WORDS=[['水','みず','물'],['食べる','たべる','먹다'],['会議','かいぎ','회의'],['電車','でんしゃ','전철'],['学校','がっこう','학교'],['友達','ともだち','친구'],['天気','てんき','날씨'],['仕事','しごと','일, 업무'],['時間','じかん','시간'],['新聞','しんぶん','신문']];
+let qi=0,score=0,wrong=[],pool=WORDS;
+const shuffle=a=>[...a].sort(()=>Math.random()-.5);
+function render(){
+  const [w,r,m]=pool[qi];
+  $('#qn').textContent=`${qi+1} / ${pool.length}`;$('#pg').style.width=(qi+1)/pool.length*100+'%';
+  $('#w').innerHTML=`<ruby>${w}<rt>${r}</rt></ruby>`;
+  $('#fb').textContent='정답을 선택하세요';
+  const opts=shuffle([m,...shuffle(WORDS.filter(x=>x[2]!==m)).slice(0,3).map(x=>x[2])]);
+  $('#opts').innerHTML='';
+  opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>pick(b,o,m,w,r);$('#opts').append(b)});
+}
+function pick(b,o,m,w,r){
+  if($('#opts').dataset.lock)return;$('#opts').dataset.lock=1;
+  const ok=o===m;b.classList.add(ok?'ok':'no');
+  if(ok)score++;else{wrong.push([w,r,m]);$$('.opt').find(x=>x.textContent===m).classList.add('ok')}
+  $('#fb').innerHTML=ok?`<b>정답!</b> ${w} (${r}) = ${m}`:`오답 · ${w} (${r}) = <b>${m}</b>`;
+  setTimeout(()=>{delete $('#opts').dataset.lock;qi++;qi<pool.length?render():finish()},1100);
+}
+function finish(){
+  $('#sc').textContent=score;$('#rv').style.strokeDashoffset=314*(1-score/pool.length);
+  $('#wl').innerHTML=wrong.length?wrong.map(x=>`<div><span>${x[0]} <small>${x[1]}</small></span><em>${x[2]}</em></div>`).join(''):'<span style="color:#1fc9a2;font-weight:700">모두 정답! 🎉</span>';
+  qi=pool.length-1;
+}
+$('#rt').onclick=()=>{pool=wrong.length?wrong:WORDS;wrong=[];qi=0;score=0;$('#rv').style.strokeDashoffset=314;$('#sc').textContent=0;$('#wl').innerHTML='<span style="color:#8a92b0">풀이를 마치면 표시됩니다</span>';render()};
+$('#sp').onclick=()=>{try{const u=new SpeechSynthesisUtterance(pool[qi][0]);u.lang='ja-JP';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
+render();
+</script>
+</body>
+</html>
